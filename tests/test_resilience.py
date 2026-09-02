@@ -78,6 +78,40 @@ async def test_retry_after_header_is_honoured(mock):
     assert elapsed >= 0.9
 
 
+async def test_server_error_retry_after_does_not_dictate_the_wait(mock):
+    """Source B's 5xx sends Retry-After: 1, but its failures clear immediately.
+
+    Obeying that hint literally cost 3 seconds per run for nothing. On a 5xx we take the
+    shorter of the hint and our own backoff; on a 429 the hint still wins.
+    """
+    async with httpx.AsyncClient(base_url=mock.base_url, timeout=10.0) as client:
+        req = requester(client, policy=FAST)
+        started = time.monotonic()
+        records = [r async for page in SourceB(req, 100).paginate() for r in page]
+        elapsed = time.monotonic() - started
+
+    assert len(records) == 6
+    assert req.stats.retries == 3
+    # Three retries would idle 3s if Retry-After were binding here.
+    assert elapsed < 2.0
+
+
+async def test_rate_limit_retry_after_is_still_binding(mock):
+    """A 429 means we are going too fast, so its Retry-After must be obeyed in full."""
+    async with httpx.AsyncClient(base_url=mock.base_url, timeout=10.0) as client:
+        req = requester(client, name="endpoint_c", policy=FAST)
+        for _ in range(2):
+            await req.get_json("/source-c/products", {"offset": 0, "limit": 2})
+
+        started = time.monotonic()
+        await req.get_json("/source-c/products", {"offset": 2, "limit": 2})
+        elapsed = time.monotonic() - started
+
+    assert req.stats.rate_limited == 1
+    # FAST's backoff caps at 50ms, so only the honoured header explains a full second.
+    assert elapsed >= 0.9
+
+
 async def test_retry_budget_caps_total_retries(source_b_down_server):
     """A budget smaller than the attempt count stops the source early."""
     async with httpx.AsyncClient(base_url=source_b_down_server.base_url, timeout=10.0) as client:

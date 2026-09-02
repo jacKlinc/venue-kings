@@ -89,8 +89,12 @@ deterministic despite concurrent fetching.
 
 - Retried: 408, 425, 429, 500, 502, 503, 504, timeouts, transport errors.
 - Never retried: 400, 404, 422 — deterministic, so a retry only wastes budget.
-- Exponential backoff with full jitter; `Retry-After` takes precedence, itself capped at
-  `max_retry_after` so a hostile header cannot stall the run.
+- Exponential backoff with full jitter, capped at `max_retry_after` so a hostile header
+  cannot stall the run.
+- **`Retry-After` is binding on a 429, advisory on a 5xx.** A 429 means we are going too
+  fast, so the server's figure is obeyed in full. A 5xx is a fault the server cannot time,
+  and obeying its guess literally cost ~3s per run against upstreams that recover
+  instantly, so there we take the shorter of the hint and our own backoff.
 - Each source has its own **retry budget** (default 10). Exhausting it fails that source
   rather than letting one broken upstream consume the whole run.
 - Source C is paced proactively at its documented 2 req/s, so 429s are avoided rather than
@@ -122,6 +126,17 @@ deterministic despite concurrent fetching.
 | 12 | A deterministic 4xx is attempted exactly once | `test_resilience.py` |
 | 13 | `Retry-After` is honoured and capped | `test_resilience.py` |
 | 14 | A run exceeding its deadline still reports partial data | `test_resilience.py` |
+| 15 | A 5xx `Retry-After` does not dictate the wait; a 429's does | `test_resilience.py` |
+| 16 | Sources are fetched concurrently, beating sequential wall time | `test_metrics.py` |
+| 17 | Run metrics agree with the per-source reports | `test_metrics.py` |
+
+## Observability
+
+Every run reports `metrics`: wall time against `sequential_ms` (the summed per-source
+durations) and the resulting `concurrency_saving_ms`, plus totals for requests, retries,
+rate-limit hits and records received/normalized/dropped. Each source additionally carries
+p50/p95/max request latency, measured around the HTTP call only — rate-limiter waits and
+retry backoff are excluded, so latency reflects the upstream rather than our own pacing.
 
 ## Assumptions and open questions
 

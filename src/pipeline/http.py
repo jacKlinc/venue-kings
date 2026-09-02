@@ -3,7 +3,7 @@
 import asyncio
 import random
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
 
@@ -100,12 +100,22 @@ def _backoff(attempt: int, policy: RetryPolicy) -> float:
 
 
 def _delay_for(exc: BaseException, attempt: int, policy: RetryPolicy) -> float:
-    """Honour Retry-After when the upstream sends one, else back off."""
-    if isinstance(exc, httpx.HTTPStatusError):
-        hinted = parse_retry_after(exc.response.headers.get("Retry-After"), policy.max_retry_after)
-        if hinted is not None:
-            return hinted
-    return _backoff(attempt, policy)
+    """Wait as long as the upstream asks when throttled, else back off.
+
+    Retry-After is binding on a 429: the server is telling us we are going too fast, and
+    ignoring it would just earn another 429. On a 5xx it is only a hint about a fault the
+    server cannot time, and obeying it literally can idle far longer than the outage
+    lasts, so we take the shorter of the hint and our own backoff.
+    """
+    if not isinstance(exc, httpx.HTTPStatusError):
+        return _backoff(attempt, policy)
+
+    hinted = parse_retry_after(exc.response.headers.get("Retry-After"), policy.max_retry_after)
+    if hinted is None:
+        return _backoff(attempt, policy)
+    if exc.response.status_code == 429:
+        return hinted
+    return min(hinted, _backoff(attempt, policy))
 
 
 @dataclass
@@ -115,6 +125,8 @@ class RequestStats:
     requests: int = 0
     retries: int = 0
     rate_limited: int = 0
+    # Per-request latency in ms, excluding any rate-limiter wait.
+    latencies_ms: list[float] = field(default_factory=list)
 
 
 class Requester:
@@ -151,7 +163,11 @@ class Requester:
         if self._limiter is not None:
             await self._limiter.acquire()
         self.stats.requests += 1
-        response = await self._client.get(url, params=params)
+        started = time.perf_counter()
+        try:
+            response = await self._client.get(url, params=params)
+        finally:
+            self.stats.latencies_ms.append((time.perf_counter() - started) * 1000)
         if response.status_code == 429:
             self.stats.rate_limited += 1
         response.raise_for_status()

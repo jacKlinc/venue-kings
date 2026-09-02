@@ -85,11 +85,37 @@ B stops at its first 503, C stops at its first 429, and the run still reports
 ## Status
 
 - **Phase 1 — fetch, normalize, log.** Done. No retry layer, so transient upstream failures
-  degrade their source by design; this is what makes the isolation visible.
-- **Phase 2 — resilience.** Retries with jittered backoff, `Retry-After`, proactive rate
-  limiting for source C, per-request and whole-run timeouts.
-- **Phase 3 — metrics and performance.** Per-source counters in the report, connection
-  pooling, final documentation.
+  degraded their source by design; this is what made the isolation visible.
+- **Phase 2 — resilience.** Done. Retries with jittered backoff, `Retry-After`, proactive
+  rate limiting for source C, per-request and whole-run timeouts. 12 → 17 products.
+- **Phase 3 — metrics and performance.** Done. See below.
+
+## Phase 3 findings
+
+Measured before changing anything. The run took 3812ms, of which source B accounted for
+3760ms — and **3000ms of that was sleeping**, not working: three retries, each waiting the
+full second the mock's `Retry-After: 1` asked for.
+
+Checking directly showed the retry succeeds with *no* wait at all: the mock re-arms
+immediately. We were idling three seconds per run for nothing.
+
+The fix is a distinction rather than an override. `Retry-After` on a **429** is binding —
+the server is telling us we are exceeding its rate, and ignoring it earns another 429. On a
+**5xx** it is a guess about a fault the server cannot time, so we take the shorter of the
+hint and our own backoff. **3812ms → 1326ms, a 64% reduction**, with identical output
+(17 products, 3 retries). The test suite also dropped from 45s to 23s.
+
+What remains is a genuine floor: source C's documented 2 requests/second over three pages
+costs ~1000ms, and the run is now bounded by it. Working around that would mean violating a
+constraint we were asked to respect.
+
+Also added: `metrics.py` aggregating per-source counters and p50/p95/max request latency
+(measured around the HTTP call only, so backoff and limiter waits do not inflate it), plus
+explicit connection-pool limits on the shared client.
+
+Not pursued, deliberately: per-page concurrency within a source (pagination is inherently
+serial — page N+1 is unknown until page N returns) and caching (a single-shot CLI has
+nothing to reuse between runs).
 
 ## With more time
 

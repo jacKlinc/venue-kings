@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     log_format: Literal["console", "json"] = "console"
     log_level: LogLevel = "INFO"
 
+    # One keep-alive connection per source is enough; pages within a source are serial.
+    max_connections: int = Field(default=8, ge=1)
+
     connect_timeout: float = Field(default=5.0, gt=0)
     read_timeout: float = Field(default=10.0, gt=0)
     # Whole-run ceiling: a source still running when this expires is cancelled.
