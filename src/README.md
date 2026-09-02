@@ -58,10 +58,16 @@ Source B's three transient failures (one 503, two 502s) are retried away, and so
 paced to stay inside its 2-per-second limit, so neither costs any records:
 
 ```
-endpoint_a  ok        3 requests, 0 retries
-endpoint_b  degraded  6 requests, 3 retries   (1 record dropped: b-205)
-endpoint_c  ok        3 requests, 0 rate-limit hits
+endpoint_a  ok        3 requests, 0 retries          p50  86ms
+endpoint_b  degraded  6 requests, 3 retries          p50 128ms   (1 dropped: b-205)
+endpoint_c  ok        3 requests, 0 rate-limit hits  p50  67ms
+
+wall 1326ms vs 2621ms sequential — concurrency saved 1295ms
 ```
+
+`metrics` in the report carries those totals; each source also reports p50/p95/max request
+latency, measured around the HTTP call only so backoff and rate-limiter waits do not
+inflate it.
 
 ```json
 {

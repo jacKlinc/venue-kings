@@ -108,7 +108,24 @@ class SourceReport(BaseModel):
     retries: int = 0
     rate_limited: int = 0
     duration_ms: int = 0
+    latency_p50_ms: int = 0
+    latency_p95_ms: int = 0
+    latency_max_ms: int = 0
     error: str | None = None
+
+
+class RunMetrics(BaseModel):
+    """Run-level totals, for spotting where time and requests went."""
+
+    wall_ms: int
+    sequential_ms: int
+    concurrency_saving_ms: int
+    requests: int
+    retries: int
+    rate_limited: int
+    records_received: int
+    records_normalized: int
+    records_dropped: int
 
 
 class RunStatus(StrEnum):
@@ -126,6 +143,7 @@ class RunReport(BaseModel):
     finished_at: datetime
     duration_ms: int
     product_count: int
+    metrics: RunMetrics
     products: list[NormalizedProduct]
     sources: dict[str, SourceReport]
     warnings: list[RunWarning]
@@ -138,6 +156,7 @@ __all__ = [
     "RawSourceA",
     "RawSourceB",
     "RawSourceC",
+    "RunMetrics",
     "RunReport",
     "RunStatus",
     "RunWarning",

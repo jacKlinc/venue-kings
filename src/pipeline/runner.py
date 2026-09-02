@@ -11,6 +11,7 @@ import httpx
 from .config import Settings
 from .dedupe import SOURCE_PRECEDENCE, deduplicate
 from .http import RateLimiter, Requester, RetryBudget, RetryPolicy
+from .metrics import build_metrics, summarize_latency
 from .models import (
     NormalizedProduct,
     RunReport,
@@ -98,10 +99,14 @@ async def collect_source(source: Source, settings: Settings) -> SourceOutcome:
 
 
 def _record_stats(source: Source, report: SourceReport) -> None:
-    """Copy the source's request counters into its report."""
+    """Copy the source's request counters and latency spread into its report."""
     report.requests = source.stats.requests
     report.retries = source.stats.retries
     report.rate_limited = source.stats.rate_limited
+    p50, p95, peak = summarize_latency(source.stats.latencies_ms)
+    report.latency_p50_ms = p50
+    report.latency_p95_ms = p95
+    report.latency_max_ms = peak
 
 
 def _absorb_page(
@@ -192,14 +197,19 @@ async def _settled(task: asyncio.Task, source: Source) -> SourceOutcome:
 
 
 def build_client(settings: Settings) -> httpx.AsyncClient:
-    """One pooled client shared by every source."""
+    """One pooled client shared by every source, so connections are reused not rebuilt."""
     timeout = httpx.Timeout(
         connect=settings.connect_timeout,
         read=settings.read_timeout,
         write=settings.read_timeout,
         pool=settings.connect_timeout,
     )
-    return httpx.AsyncClient(base_url=settings.base_url, timeout=timeout)
+    limits = httpx.Limits(
+        max_connections=settings.max_connections,
+        max_keepalive_connections=settings.max_connections,
+        keepalive_expiry=settings.run_timeout,
+    )
+    return httpx.AsyncClient(base_url=settings.base_url, timeout=timeout, limits=limits)
 
 
 async def run(settings: Settings) -> RunReport:
@@ -215,15 +225,19 @@ async def run(settings: Settings) -> RunReport:
 
     products, warnings = _merge(outcomes)
     finished_at = datetime.now(UTC)
+    duration_ms = int((time.perf_counter() - started) * 1000)
+    reports = [o.report for o in outcomes]
+    metrics = build_metrics(reports, duration_ms)
     report = RunReport(
         run_id=run_id,
         status=_run_status(list(outcomes), warnings),
         started_at=started_at,
         finished_at=finished_at,
-        duration_ms=int((time.perf_counter() - started) * 1000),
+        duration_ms=duration_ms,
         product_count=len(products),
+        metrics=metrics,
         products=products,
-        sources={o.report.name: o.report for o in outcomes},
+        sources={r.name: r for r in reports},
         warnings=warnings,
     )
     log.info(
@@ -232,7 +246,10 @@ async def run(settings: Settings) -> RunReport:
         status=report.status,
         products=report.product_count,
         warnings=len(warnings),
-        duration_ms=report.duration_ms,
+        duration_ms=duration_ms,
+        requests=metrics.requests,
+        retries=metrics.retries,
+        saved_ms=metrics.concurrency_saving_ms,
     )
     return report
 
