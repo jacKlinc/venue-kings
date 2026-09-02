@@ -1,0 +1,182 @@
+{
+  "run_id": "bea04e5dc312",
+  "status": "partial_success",
+  "started_at": "2026-09-02T21:04:03.227963Z",
+  "finished_at": "2026-09-02T21:04:03.653562Z",
+  "duration_ms": 425,
+  "product_count": 14,
+  "products": [
+    {
+      "id": "endpoint_a:a-101",
+      "title": "Mechanical Keyboard",
+      "source": "endpoint_a",
+      "price": "89.99",
+      "currency": "GBP",
+      "category": "electronics",
+      "fetched_at": "2026-09-02T21:04:03.364880Z"
+    },
+    {
+      "id": "endpoint_a:a-102",
+      "title": "Ergonomic Mouse",
+      "source": "endpoint_a",
+      "price": "54.5",
+      "currency": "GBP",
+      "category": "electronics",
+      "fetched_at": "2026-09-02T21:04:03.364880Z"
+    },
+    {
+      "id": "endpoint_a:a-103",
+      "title": "Standing Desk Mat",
+      "source": "endpoint_a",
+      "price": "39.0",
+      "currency": "GBP",
+      "category": "office",
+      "fetched_at": "2026-09-02T21:04:03.447850Z"
+    },
+    {
+      "id": "endpoint_a:a-104",
+      "title": "Monitor Arm",
+      "source": "endpoint_a",
+      "price": "119.95",
+      "currency": "GBP",
+      "category": "office",
+      "fetched_at": "2026-09-02T21:04:03.447850Z"
+    },
+    {
+      "id": "endpoint_a:a-105",
+      "title": "Laptop Stand",
+      "source": "endpoint_a",
+      "price": "44.25",
+      "currency": "GBP",
+      "category": "office",
+      "fetched_at": "2026-09-02T21:04:03.530838Z"
+    },
+    {
+      "id": "endpoint_a:a-106",
+      "title": "USB-C Cable",
+      "source": "endpoint_a",
+      "price": "14.99",
+      "currency": "GBP",
+      "category": "electronics",
+      "fetched_at": "2026-09-02T21:04:03.530838Z"
+    },
+    {
+      "id": "endpoint_b:b-201",
+      "title": "Desk Lamp",
+      "source": "endpoint_b",
+      "price": "34.99",
+      "currency": "GBP",
+      "category": "home",
+      "fetched_at": "2026-09-02T21:04:03.405097Z"
+    },
+    {
+      "id": "endpoint_b:b-202",
+      "title": "Noise-Cancelling Headphones",
+      "source": "endpoint_b",
+      "price": "129.99",
+      "currency": "GBP",
+      "category": "electronics",
+      "fetched_at": "2026-09-02T21:04:03.405097Z"
+    },
+    {
+      "id": "endpoint_b:b-203",
+      "title": "Notebook Set",
+      "source": "endpoint_b",
+      "price": "18.99",
+      "currency": "GBP",
+      "category": "office",
+      "fetched_at": "2026-09-02T21:04:03.528432Z"
+    },
+    {
+      "id": "endpoint_b:b-204",
+      "title": "Travel Mug",
+      "source": "endpoint_b",
+      "price": "24.99",
+      "currency": "GBP",
+      "category": "kitchen",
+      "fetched_at": "2026-09-02T21:04:03.528432Z"
+    },
+    {
+      "id": "endpoint_c:c-301",
+      "title": "USB-C Hub",
+      "source": "endpoint_c",
+      "price": "49.50",
+      "currency": "GBP",
+      "category": "electronics",
+      "fetched_at": "2026-09-02T21:04:03.345566Z"
+    },
+    {
+      "id": "endpoint_c:c-302",
+      "title": "Coffee Grinder",
+      "source": "endpoint_c",
+      "price": "79.00",
+      "currency": "GBP",
+      "category": "kitchen",
+      "fetched_at": "2026-09-02T21:04:03.345566Z"
+    },
+    {
+      "id": "endpoint_c:c-303",
+      "title": "Desk Organizer",
+      "source": "endpoint_c",
+      "price": "27.75",
+      "currency": "GBP",
+      "category": "office",
+      "fetched_at": "2026-09-02T21:04:03.408235Z"
+    },
+    {
+      "id": "endpoint_c:c-304",
+      "title": "Portable SSD",
+      "source": "endpoint_c",
+      "price": "109.99",
+      "currency": "GBP",
+      "category": "electronics",
+      "fetched_at": "2026-09-02T21:04:03.408235Z"
+    }
+  ],
+  "sources": {
+    "endpoint_a": {
+      "name": "endpoint_a",
+      "status": "ok",
+      "pages_fetched": 3,
+      "records_received": 6,
+      "records_normalized": 6,
+      "records_dropped": 0,
+      "duration_ms": 257,
+      "error": null
+    },
+    "endpoint_b": {
+      "name": "endpoint_b",
+      "status": "degraded",
+      "pages_fetched": 2,
+      "records_received": 4,
+      "records_normalized": 4,
+      "records_dropped": 0,
+      "duration_ms": 374,
+      "error": "HTTP 502 from /source-b/products"
+    },
+    "endpoint_c": {
+      "name": "endpoint_c",
+      "status": "degraded",
+      "pages_fetched": 2,
+      "records_received": 4,
+      "records_normalized": 4,
+      "records_dropped": 0,
+      "duration_ms": 192,
+      "error": "HTTP 429 from /source-c/products"
+    }
+  },
+  "warnings": [
+    {
+      "code": "source_failed",
+      "source": "endpoint_b",
+      "detail": "HTTP 502 from /source-b/products",
+      "record_id": null
+    },
+    {
+      "code": "source_failed",
+      "source": "endpoint_c",
+      "detail": "HTTP 429 from /source-c/products",
+      "record_id": null
+    }
+  ]
+}
