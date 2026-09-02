@@ -101,6 +101,12 @@ def bad_data_server() -> Iterator[MockServer]:
     yield from _start("bad-data-heavy")
 
 
+@pytest.fixture(scope="session")
+def slow_server() -> Iterator[MockServer]:
+    """Latency inflated far enough that any sane run deadline expires."""
+    yield from _start("standard", {"LATENCY_MULTIPLIER": "30"})
+
+
 @pytest.fixture
 def mock(standard_server: MockServer) -> Iterator[MockServer]:
     """The standard scenario, reset before and after so tests never share upstream state."""

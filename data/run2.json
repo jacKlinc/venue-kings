@@ -1,0 +1,212 @@
+{
+  "run_id": "692d3360fc01",
+  "status": "partial_success",
+  "started_at": "2026-09-02T21:36:35.092756Z",
+  "finished_at": "2026-09-02T21:36:36.641038Z",
+  "duration_ms": 1548,
+  "product_count": 17,
+  "products": [
+    {
+      "id": "endpoint_a:a-101",
+      "title": "Mechanical Keyboard",
+      "source": "endpoint_a",
+      "price": "89.99",
+      "currency": "GBP",
+      "category": "electronics",
+      "fetched_at": "2026-09-02T21:36:35.230815Z"
+    },
+    {
+      "id": "endpoint_a:a-102",
+      "title": "Ergonomic Mouse",
+      "source": "endpoint_a",
+      "price": "54.5",
+      "currency": "GBP",
+      "category": "electronics",
+      "fetched_at": "2026-09-02T21:36:35.230815Z"
+    },
+    {
+      "id": "endpoint_a:a-103",
+      "title": "Standing Desk Mat",
+      "source": "endpoint_a",
+      "price": "39.0",
+      "currency": "GBP",
+      "category": "office",
+      "fetched_at": "2026-09-02T21:36:35.322757Z"
+    },
+    {
+      "id": "endpoint_a:a-104",
+      "title": "Monitor Arm",
+      "source": "endpoint_a",
+      "price": "119.95",
+      "currency": "GBP",
+      "category": "office",
+      "fetched_at": "2026-09-02T21:36:35.322757Z"
+    },
+    {
+      "id": "endpoint_a:a-105",
+      "title": "Laptop Stand",
+      "source": "endpoint_a",
+      "price": "44.25",
+      "currency": "GBP",
+      "category": "office",
+      "fetched_at": "2026-09-02T21:36:35.406136Z"
+    },
+    {
+      "id": "endpoint_a:a-106",
+      "title": "USB-C Cable",
+      "source": "endpoint_a",
+      "price": "14.99",
+      "currency": "GBP",
+      "category": "electronics",
+      "fetched_at": "2026-09-02T21:36:35.406136Z"
+    },
+    {
+      "id": "endpoint_b:b-201",
+      "title": "Desk Lamp",
+      "source": "endpoint_b",
+      "price": "34.99",
+      "currency": "GBP",
+      "category": "home",
+      "fetched_at": "2026-09-02T21:36:35.267522Z"
+    },
+    {
+      "id": "endpoint_b:b-202",
+      "title": "Noise-Cancelling Headphones",
+      "source": "endpoint_b",
+      "price": "129.99",
+      "currency": "GBP",
+      "category": "electronics",
+      "fetched_at": "2026-09-02T21:36:35.267522Z"
+    },
+    {
+      "id": "endpoint_b:b-203",
+      "title": "Notebook Set",
+      "source": "endpoint_b",
+      "price": "18.99",
+      "currency": "GBP",
+      "category": "office",
+      "fetched_at": "2026-09-02T21:36:35.392474Z"
+    },
+    {
+      "id": "endpoint_b:b-204",
+      "title": "Travel Mug",
+      "source": "endpoint_b",
+      "price": "24.99",
+      "currency": "GBP",
+      "category": "kitchen",
+      "fetched_at": "2026-09-02T21:36:35.392474Z"
+    },
+    {
+      "id": "endpoint_b:b-206",
+      "title": "Webcam",
+      "source": "endpoint_b",
+      "price": "74.99",
+      "currency": "GBP",
+      "category": "electronics",
+      "fetched_at": "2026-09-02T21:36:36.640526Z"
+    },
+    {
+      "id": "endpoint_c:c-301",
+      "title": "USB-C Hub",
+      "source": "endpoint_c",
+      "price": "49.50",
+      "currency": "GBP",
+      "category": "electronics",
+      "fetched_at": "2026-09-02T21:36:35.208927Z"
+    },
+    {
+      "id": "endpoint_c:c-302",
+      "title": "Coffee Grinder",
+      "source": "endpoint_c",
+      "price": "79.00",
+      "currency": "GBP",
+      "category": "kitchen",
+      "fetched_at": "2026-09-02T21:36:35.208927Z"
+    },
+    {
+      "id": "endpoint_c:c-303",
+      "title": "Desk Organizer",
+      "source": "endpoint_c",
+      "price": "27.75",
+      "currency": "GBP",
+      "category": "office",
+      "fetched_at": "2026-09-02T21:36:35.274168Z"
+    },
+    {
+      "id": "endpoint_c:c-304",
+      "title": "Portable SSD",
+      "source": "endpoint_c",
+      "price": "109.99",
+      "currency": "GBP",
+      "category": "electronics",
+      "fetched_at": "2026-09-02T21:36:35.274168Z"
+    },
+    {
+      "id": "endpoint_c:c-305",
+      "title": "Water Bottle",
+      "source": "endpoint_c",
+      "price": "21.00",
+      "currency": "GBP",
+      "category": "outdoors",
+      "fetched_at": "2026-09-02T21:36:36.222245Z"
+    },
+    {
+      "id": "endpoint_c:c-306",
+      "title": "Phone Stand",
+      "source": "endpoint_c",
+      "price": "19.95",
+      "currency": "GBP",
+      "category": "electronics",
+      "fetched_at": "2026-09-02T21:36:36.222245Z"
+    }
+  ],
+  "sources": {
+    "endpoint_a": {
+      "name": "endpoint_a",
+      "status": "ok",
+      "pages_fetched": 3,
+      "records_received": 6,
+      "records_normalized": 6,
+      "records_dropped": 0,
+      "requests": 3,
+      "retries": 0,
+      "rate_limited": 0,
+      "duration_ms": 269,
+      "error": null
+    },
+    "endpoint_b": {
+      "name": "endpoint_b",
+      "status": "degraded",
+      "pages_fetched": 3,
+      "records_received": 6,
+      "records_normalized": 5,
+      "records_dropped": 1,
+      "requests": 4,
+      "retries": 1,
+      "rate_limited": 0,
+      "duration_ms": 1499,
+      "error": null
+    },
+    "endpoint_c": {
+      "name": "endpoint_c",
+      "status": "ok",
+      "pages_fetched": 3,
+      "records_received": 6,
+      "records_normalized": 6,
+      "records_dropped": 0,
+      "requests": 3,
+      "retries": 0,
+      "rate_limited": 0,
+      "duration_ms": 1080,
+      "error": null
+    }
+  },
+  "warnings": [
+    {
+      "code": "malformed_record",
+      "source": "endpoint_b",
+      "detail": "amount_cents: Input should be a valid integer, unable to parse string as an integer",
+      "record_id": "b-205"
+    }
+  ]
+}

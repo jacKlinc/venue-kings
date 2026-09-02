@@ -1,11 +1,12 @@
 """The interface every source adapter presents to the runner."""
 
 from collections.abc import AsyncIterator, Mapping
-from typing import Protocol, runtime_checkable
-
-import httpx
+from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from ..models import SourceName
+
+if TYPE_CHECKING:
+    from ..http import RequestStats
 
 Page = list[Mapping[str, object]]
 
@@ -18,6 +19,11 @@ class Source(Protocol):
 
     def paginate(self) -> AsyncIterator[Page]:
         """Yield raw record pages until the upstream is exhausted."""
+        ...
+
+    @property
+    def stats(self) -> "RequestStats":
+        """Request counters accumulated while paginating."""
         ...
 
 
@@ -35,11 +41,4 @@ def records_of(payload: object, key: str) -> Page:
     return [x for x in items if isinstance(x, Mapping)]
 
 
-async def get_json(client: httpx.AsyncClient, url: str, params: Mapping[str, object]) -> object:
-    """GET and decode JSON, raising for non-2xx."""
-    response = await client.get(url, params=params)
-    response.raise_for_status()
-    return response.json()
-
-
-__all__ = ["Page", "PageCapExceeded", "Source", "get_json", "records_of"]
+__all__ = ["Page", "PageCapExceeded", "Source", "records_of"]

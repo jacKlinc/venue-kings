@@ -57,8 +57,8 @@ async def test_malformed_record_is_dropped_but_page_mates_survive(bad_data_mock)
 async def test_clean_scenario_still_reports_the_fixture_bad_record(clean_mock):
     """b-205's broken price lives in fixtures.json, so no scenario yields a clean run.
 
-    Source C is rate limited in every scenario, so without the Phase 2 limiter it loses
-    its last page here. Phase 2 raises the expected count from 15 to 17.
+    With retries and rate limiting in place, every source now completes: 18 fixture
+    records minus the one unparseable price.
     """
     report = await run(clean_mock.settings())
 
@@ -68,7 +68,8 @@ async def test_clean_scenario_still_reports_the_fixture_bad_record(clean_mock):
 
     assert report.sources["endpoint_b"].records_normalized == 5
     assert report.sources["endpoint_a"].records_normalized == 6
-    assert report.product_count == 15
+    assert report.sources["endpoint_c"].records_normalized == 6
+    assert report.product_count == 17
 
 
 async def test_report_is_json_serialisable_with_exact_prices(clean_mock):
