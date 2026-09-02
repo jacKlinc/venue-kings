@@ -85,13 +85,24 @@ record from the higher-precedence source wins (A > B > C) and a `duplicate_confl
 warning records what was dropped. Precedence rather than arrival order keeps results
 deterministic despite concurrent fetching.
 
-## Retry policy (Phase 2)
+## Retry policy
 
-- Retried: 408, 429, 500, 502, 503, 504, timeouts, transport errors.
+- Retried: 408, 425, 429, 500, 502, 503, 504, timeouts, transport errors.
 - Never retried: 400, 404, 422 — deterministic, so a retry only wastes budget.
-- Exponential backoff with full jitter; `Retry-After` takes precedence, itself capped.
-- Source C is paced proactively at its documented 2 req/s so 429s are avoided rather
-  than absorbed.
+- Exponential backoff with full jitter; `Retry-After` takes precedence, itself capped at
+  `max_retry_after` so a hostile header cannot stall the run.
+- Each source has its own **retry budget** (default 10). Exhausting it fails that source
+  rather than letting one broken upstream consume the whole run.
+- Source C is paced proactively at its documented 2 req/s, so 429s are avoided rather than
+  absorbed. The reactive 429 path remains as a safety net.
+
+## Timeouts
+
+- Per-request connect/read timeouts on the shared client.
+- A whole-run deadline (`run_timeout`, default 60s). Sources run as tasks, so a source
+  cancelled by the deadline still contributes its partial results and appears in the
+  report as `failed` with a deadline error — the run never returns nothing because one
+  source hung.
 
 ## Acceptance criteria
 
@@ -105,8 +116,12 @@ deterministic despite concurrent fetching.
 | 6 | A failed source appears in both the log and the report | `test_runner.py` |
 | 7 | All-sources-down yields `failed` and exit 1 | `test_cli.py` |
 | 8 | The report is JSON with exact decimal prices | `test_runner.py` |
-| 9 | Transient 503/502 recover without data loss | Phase 2 |
-| 10 | Source C completes with zero 429s | Phase 2 |
+| 9 | Transient 503/502 recover without data loss | `test_resilience.py` |
+| 10 | Source C completes with zero 429s | `test_resilience.py` |
+| 11 | A source that never recovers exhausts its attempts and gives up | `test_resilience.py` |
+| 12 | A deterministic 4xx is attempted exactly once | `test_resilience.py` |
+| 13 | `Retry-After` is honoured and capped | `test_resilience.py` |
+| 14 | A run exceeding its deadline still reports partial data | `test_resilience.py` |
 
 ## Assumptions and open questions
 

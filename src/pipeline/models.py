@@ -104,6 +104,9 @@ class SourceReport(BaseModel):
     records_received: int = 0
     records_normalized: int = 0
     records_dropped: int = 0
+    requests: int = 0
+    retries: int = 0
+    rate_limited: int = 0
     duration_ms: int = 0
     error: str | None = None
 

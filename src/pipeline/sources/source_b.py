@@ -2,10 +2,9 @@
 
 from collections.abc import AsyncIterator
 
-import httpx
-
+from ..http import Requester
 from ..models import SourceName
-from .base import Page, PageCapExceeded, get_json, records_of
+from .base import Page, PageCapExceeded, records_of
 
 PATH = "/source-b/products"
 
@@ -15,9 +14,13 @@ class SourceB:
 
     name: SourceName = "endpoint_b"
 
-    def __init__(self, client: httpx.AsyncClient, max_pages: int) -> None:
-        self._client = client
+    def __init__(self, requester: Requester, max_pages: int) -> None:
+        self._requester = requester
         self._max_pages = max_pages
+
+    @property
+    def stats(self):
+        return self._requester.stats
 
     async def paginate(self) -> AsyncIterator[Page]:
         cursor: str | None = None
@@ -28,7 +31,7 @@ class SourceB:
             pages += 1
             if pages > self._max_pages:
                 raise PageCapExceeded(f"{self.name} exceeded {self._max_pages} pages")
-            payload = await get_json(self._client, PATH, self._params(cursor))
+            payload = await self._requester.get_json(PATH, self._params(cursor))
             yield records_of(payload, "items")
 
             cursor = self._next_cursor(payload)
